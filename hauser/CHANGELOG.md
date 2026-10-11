@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.43.3 - 2026-10-10
+
+- Dignity when things fail: older Linux x86-64 hosts no longer lose the entire
+  app when the native image library crashes with an illegal instruction. Hauser
+  tests the library in a separate process and uses portable image processing
+  if that test fails. The portable library now matches the current sharp version.
+
 ## 0.43.2 - 2026-10-08
 
 - A camera whose stream keeps breaking no longer floods Home Assistant: Hauser

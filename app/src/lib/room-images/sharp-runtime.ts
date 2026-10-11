@@ -3,15 +3,25 @@
    `sharp` liefert für Linux x64 nur noch vorkompilierte Binärdateien, die
    einen Prozessor der Stufe x86-64-v2 verlangen. Auf älterer Hardware — und
    vor allem in virtuellen Maschinen, die dem Gast eine Standard-CPU ohne
-   SSE4.2 vorspielen — schlägt das Laden fehl. `sharp` greift dann von selbst
-   auf `@img/sharp-wasm32` zurück, sofern das Paket mitgeliefert ist; genau
-   dafür steht es in den optionalen Abhängigkeiten.
+   SSE4.2 vorspielen — kann bereits das Laden mit SIGILL den Prozess beenden
+   (Issue #29). Das ist kein abfangbarer JavaScript-Fehler. Deshalb wird der
+   Linux-x64-Import zuerst in einem eigenen Prozess geprüft. Scheitert er,
+   laden wir die öffentliche sharp-API mit der portablen Wasm-Bindung, ohne
+   die native Bibliothek im Server noch einmal anzufassen.
 
    Scheitert auch das, darf der Fehler den Dienst nicht mitreißen: bis hierhin
    hing der komplette Start am Bildmodul, ein altes Gerät bekam also gar kein
    Panel statt bloß keine Raumbilder. Deshalb der Ersatz, der erst beim
    tatsächlichen Bildaufruf mit klarer Ursache abbricht. */
 import type SharpFactory from 'sharp';
+// @ts-expect-error Server-only Node module; frontend types intentionally exclude Node.
+import { spawnSync } from 'node:child_process';
+// @ts-expect-error Server-only Node module; frontend types intentionally exclude Node.
+import { createRequire, Module } from 'node:module';
+// @ts-expect-error Server-only Node module; frontend types intentionally exclude Node.
+import process from 'node:process';
+// @ts-expect-error Server-only Node module; frontend types intentionally exclude Node.
+import { fileURLToPath } from 'node:url';
 
 let loaded: typeof SharpFactory | null = null;
 let reason = '';
@@ -24,6 +34,20 @@ let reason = '';
    Deshalb laden wir den Ersatz danach selbst noch einmal und schreiben mit,
    woran er wirklich scheitert — sonst ist einem Haushalt nicht zu helfen. */
 const WASM_FALLBACK = '@img/sharp-wasm32/sharp.node';
+const require = createRequire(import.meta.url);
+
+function portableSharp(): typeof SharpFactory {
+  /* sharp 0.35's CJS binding loader normally tries native code before Wasm.
+     Supply its binding through the module cache instead: the rest of the
+     public API (including codecs and versions) still comes from sharp itself.
+     This also skips locally built native bindings, not just npm binaries. */
+  const bindingPath = fileURLToPath(new URL('./sharp.cjs', import.meta.resolve('sharp')));
+  const binding = new Module(bindingPath);
+  binding.exports = require(WASM_FALLBACK);
+  binding.loaded = true;
+  require.cache[bindingPath] = binding;
+  return require('sharp');
+}
 
 async function realReason(error: unknown): Promise<string> {
   const first = error instanceof Error ? error.message : String(error);
@@ -42,7 +66,17 @@ async function realReason(error: unknown): Promise<string> {
 }
 
 try {
-  loaded = (await import('sharp')).default;
+  if (process.platform === 'linux' && process.arch === 'x64') {
+    const probe = spawnSync(process.execPath, [
+      '--input-type=module', '--eval', 'await import(process.argv[1]);', import.meta.resolve('sharp'),
+    ], { encoding: 'utf8', timeout: 10_000, stdio: ['ignore', 'ignore', 'pipe'] });
+    if (probe.status !== 0) {
+      const failure = probe.signal || probe.error?.message || probe.stderr?.trim() || `exit ${probe.status}`;
+      console.warn(`[hauser] Native sharp check failed (${failure}) — using portable image processing.`);
+      loaded = portableSharp();
+    }
+  }
+  loaded ??= (await import('sharp')).default;
 } catch (error) {
   reason = await realReason(error);
   console.warn(`[hauser] sharp konnte nicht geladen werden — Raumbilder bleiben aus:\n${reason}`);
