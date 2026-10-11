@@ -10,6 +10,7 @@
    ganze Szenen-Logik laden. */
 
 import { runtime } from '../adapter/runtime.svelte.ts';
+import { dispatchScene } from '../adapter/scene-check.ts';
 import { offerUndo } from './undo.svelte.ts';
 import type { HaScene } from '../adapter/types.ts';
 import { setSceneEditLeaveHook } from './scene-edit-overlay.svelte.ts';
@@ -199,9 +200,16 @@ function memberInfo(roomId: string, sceneId: SceneId, entityId: string) {
 export function applyScene(roomId: string, sceneId: SceneId): void {
   const scene = sceneDefOf(roomId, sceneId);
   if (!scene) return;
-  const members = sceneMembers(roomId, sceneId).map((entityId) => memberInfo(roomId, sceneId, entityId));
+  const members = sceneMembers(roomId, sceneId).flatMap((entityId) => {
+    const member = memberInfo(roomId, sceneId, entityId);
+    const group = deviceManager.config.groups[entityId]?.members;
+    return group?.length
+      ? group.map((id) => ({ ...member, entityId: id, dimmable: dimmableOf(id) }))
+      : [member];
+  });
+  const run = Symbol('scene');
   for (const { command, optimistic } of buildSceneCommands(scene, members)) {
-    runtime.dispatch(command, optimistic);
+    dispatchScene(runtime, command, optimistic, run);
   }
 }
 

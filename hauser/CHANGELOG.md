@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.43.4 - 2026-10-11
+
+- Scenes now keep checking actual device states until every remaining target
+  is confirmed together. Only devices that still differ receive another command;
+  temporary read or connection failures no longer end the check. New controls
+  and Undo take precedence. Available in the web app and the native iOS app.
+
 ## 0.43.3 - 2026-10-10
 
 - Dignity when things fail: older Linux x86-64 hosts no longer lose the entire
