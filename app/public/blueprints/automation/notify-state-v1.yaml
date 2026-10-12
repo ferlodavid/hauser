@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (c) 2026 Hauser contributors
-# Version: 2
+# Version: 3
 blueprint:
   name: Hauser state notification v1
   description: >-
@@ -62,6 +62,9 @@ triggers:
       minutes: !input hold_minutes
 
 variables:
+  source_entity: !input source_entity
+  fallback_title: !input title
+  display_title: "{{ state_attr(source_entity, 'friendly_name') or fallback_title }}"
   notify_service: !input notify_service
   notify_url: !input notify_url
 
@@ -69,7 +72,7 @@ actions:
   - action: persistent_notification.create
     data:
       notification_id: !input notification_id
-      title: !input title
+      title: "{{ display_title }}"
       message: !input message
   - if:
       - condition: template
@@ -77,7 +80,7 @@ actions:
     then:
       - action: "{{ notify_service }}"
         data:
-          title: !input title
+          title: "{{ display_title }}"
           message: !input message
           data:
             url: "{{ notify_url }}"

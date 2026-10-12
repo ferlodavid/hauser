@@ -2,7 +2,23 @@
 
 ARG NODE_IMAGE=node:24-alpine@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd
 
-FROM ${NODE_IMAGE} AS build
+FROM ${NODE_IMAGE} AS image-library
+ARG TARGETARCH
+COPY app/package.json app/package-lock.json /build/app/
+COPY container/build-image-library.sh /build/build-image-library.sh
+RUN mkdir -p /opt/hauser-vips /build/app/node_modules/sharp && \
+    if [ "$TARGETARCH" = amd64 ]; then sh /build/build-image-library.sh; fi
+
+FROM ${NODE_IMAGE} AS image-library-runtime
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = amd64 ]; then \
+      apk add --no-cache glib expat libjpeg-turbo libpng libwebp libwebpmux libwebpdemux libheif \
+        libheif-aom libheif-dav1d tiff lcms2 pango librsvg; \
+    fi
+COPY --from=image-library /opt/hauser-vips /opt/hauser-vips
+ENV HMI_SHARP_BASELINE_BINDING=/opt/hauser-vips/lib/sharp.node
+
+FROM image-library-runtime AS build
 WORKDIR /build/app
 COPY app/package.json app/package-lock.json ./
 RUN npm ci
@@ -69,8 +85,8 @@ RUN go mod download
 COPY tools/tunnel/ ./
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/hauser-tunnel .
 
-FROM ${NODE_IMAGE} AS runtime
-ARG HAUSER_VERSION=0.43.4
+FROM image-library-runtime AS runtime
+ARG HAUSER_VERSION=0.43.5
 ARG HAUSER_REVISION=""
 ARG HAUSER_SOURCE_URL=""
 LABEL org.opencontainers.image.title="Hauser" \

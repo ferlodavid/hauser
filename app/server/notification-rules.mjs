@@ -156,8 +156,8 @@ export function notificationAutomationSpecs(rules, push = { service: null }) {
   const specs = [];
   for (const rule of rules) {
     if (!rule.enabled) continue;
-    for (const trigger of rule.triggers) {
-      if (!trigger.enabled) continue;
+    const activeTriggers = rule.triggers.filter((trigger) => trigger.enabled);
+    for (const trigger of activeTriggers) {
       const blueprint = NOTIFICATION_BLUEPRINTS[trigger.kind];
       const input = {
         source_entity: rule.entityId,
@@ -174,6 +174,26 @@ export function notificationAutomationSpecs(rules, push = { service: null }) {
           alias: `Hauser · ${rule.name} · ${trigger.label}`,
           description: `Hauser notification rule ${rule.id} / ${trigger.key}`,
           use_blueprint: { path: blueprint.path, input },
+          mode: 'restart',
+        },
+      });
+    }
+    // Wäsche fertig bleibt eine Aufgabe zum Ausräumen; ein niedriger
+    // Leistungswert bestätigt nicht, dass sie erledigt wurde.
+    if (activeTriggers.length && rule.category !== 'laundry') {
+      specs.push({
+        id: `${NOTIFICATION_AUTOMATION_PREFIX}${notificationHaSafe(rule.id)}__resolved`,
+        config: {
+          alias: `Hauser · ${rule.name} · resolved`,
+          description: `Hauser notification rule ${rule.id} / resolved`,
+          use_blueprint: {
+            path: NOTIFICATION_BLUEPRINTS.resolved.path,
+            input: {
+              source_entity: rule.entityId,
+              notification_id: `${NOTIFICATION_ID_PREFIX}${notificationHaSafe(rule.id)}`,
+              active_triggers: activeTriggers,
+            },
+          },
           mode: 'restart',
         },
       });
@@ -201,9 +221,8 @@ export async function syncNotificationAutomations(client, rules, blueprintDir = 
     for (const blueprint of Object.values(NOTIFICATION_BLUEPRINTS)) {
       if (!neededBlueprints.has(blueprint.path)) continue;
       const exists = blueprintExists(blueprints, blueprint.path);
-      /* Push braucht die Blueprint-Version 2 (Eingaben notify_service/notify_url):
-         eine ältere installierte Fassung wird dann überschrieben. */
-      if (exists && !push?.service) continue;
+      // Auch ohne Push müssen installierte Regeln die aktuelle Namens- und
+      // Erledigt-Erkennung erhalten.
       let yaml;
       try { yaml = readFileSync(join(blueprintDir, blueprint.file), 'utf8'); } catch {
         throw createNotificationError('NOTIFICATIONS_BLUEPRINT_MISSING', 500, `Der mitgelieferte Blueprint ${blueprint.file} fehlt.`);
@@ -231,6 +250,9 @@ export async function syncNotificationAutomations(client, rules, blueprintDir = 
   for (const entry of stale) {
     await laundryRest(client, 'DELETE', `/api/config/automation/config/${entry.unique_id}`, undefined, [200, 204, 404]);
     summary.deleted += 1;
+  }
+  if (neededBlueprints.size) {
+    await client.ws('call_service', { domain: 'automation', service: 'reload' });
   }
   return summary;
 }

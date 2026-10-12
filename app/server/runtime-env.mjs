@@ -200,6 +200,7 @@ export const NOTIFICATION_BLUEPRINTS = Object.freeze({
   state: { path: 'hauser/notify-state-v1.yaml', file: 'notify-state-v1.yaml' },
   above: { path: 'hauser/notify-above-v1.yaml', file: 'notify-above-v1.yaml' },
   below: { path: 'hauser/notify-below-v1.yaml', file: 'notify-below-v1.yaml' },
+  resolved: { path: 'hauser/notify-resolved-v1.yaml', file: 'notify-resolved-v1.yaml' },
 });
 export const NOTIFICATION_AUTOMATION_PREFIX = 'hauser_notif_';
 export const NOTIFICATION_ID_PREFIX = 'hauser_rule_';

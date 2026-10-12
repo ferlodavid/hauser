@@ -97,7 +97,7 @@ and [updates and backups](https://ralleur.github.io/hauser/docs/getting-started/
 
 ## Status and expectations
 
-Current server release: [**v0.43.4**](https://github.com/ralleur/hauser/releases/tag/v0.43.4).
+Current server release: [**v0.43.5**](https://github.com/ralleur/hauser/releases/tag/v0.43.5).
 The native iOS app has its own TestFlight releases.
 
 Hauser began on its maker’s wall panel and is still a personal project in

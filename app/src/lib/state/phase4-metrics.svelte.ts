@@ -1,5 +1,5 @@
 import {
-  assessPressLatency,
+  PHASE4_PRESS_BUDGET_MS,
   type PressLatencySample,
 } from './phase4-metrics.ts';
 
@@ -27,10 +27,9 @@ function describePressTarget(el: HTMLElement): string {
 }
 
 export function recordPressLatency(valueMs: number, target: string, at = Date.now()) {
-  const assessed = assessPressLatency(valueMs);
   const sample: PressLatencySample = {
-    valueMs: Number(assessed.valueMs.toFixed(1)),
-    passed: assessed.passed,
+    valueMs: Number(valueMs.toFixed(1)),
+    passed: valueMs < PHASE4_PRESS_BUDGET_MS,
     target,
     at,
   };

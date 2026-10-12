@@ -86,7 +86,7 @@ describe('sharp startup on older Linux x64 CPUs (#29)', () => {
     `);
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('server can continue');
-    expect(result.stderr).toContain('portable image processing');
+    expect(result.stderr).toContain('compatible image processing');
     expect(result.stderr).toContain('@img/sharp-wasm32');
     expect(readFileSync(marker, 'utf8')).toBe('native\n');
   }, 25_000);

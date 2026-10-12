@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (c) 2026 Hauser contributors
+# Version: 1
+blueprint:
+  name: Hauser resolved notification v1
+  description: >-
+    Dismisses a Hauser condition notification when none of its enabled
+    triggers still match. Missing or unavailable readings do not confirm
+    resolution. Laundry tasks are not assigned this blueprint.
+  domain: automation
+  input:
+    source_entity:
+      name: Source entity
+      selector:
+        entity: {}
+    notification_id:
+      name: Notification id
+      selector:
+        text: {}
+    active_triggers:
+      name: Enabled triggers of this rule
+      selector:
+        object: {}
+
+triggers:
+  - trigger: state
+    entity_id: !input source_entity
+  - trigger: homeassistant
+    event: start
+  - trigger: event
+    event_type: automation_reloaded
+
+variables:
+  source_entity: !input source_entity
+  active_triggers: !input active_triggers
+
+conditions:
+  - condition: template
+    value_template: >-
+      {% set value = states(source_entity) | lower %}
+      {% set result = namespace(active=false, has_state=false) %}
+      {% for item in active_triggers %}
+        {% if item.kind == 'state' %}
+          {% set result.has_state = true %}
+          {% if value in item.to %}{% set result.active = true %}{% endif %}
+        {% elif is_number(value) and item.kind == 'above' and value | float > item.value %}
+          {% set result.active = true %}
+        {% elif is_number(value) and item.kind == 'below' and value | float < item.value %}
+          {% set result.active = true %}
+        {% endif %}
+      {% endfor %}
+      {{ value not in ['unknown', 'unavailable', '']
+         and (is_number(value) or result.has_state) and not result.active }}
+
+actions:
+  - action: persistent_notification.dismiss
+    data:
+      notification_id: !input notification_id
+mode: restart

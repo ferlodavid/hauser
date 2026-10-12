@@ -59,6 +59,21 @@ ws — MIT License
   offer the same-origin live channel when Hauser runs as a Home Assistant
   app; it never ships to the browser.
 
+sharp — Apache License 2.0
+  https://github.com/lovell/sharp
+  The amd64 container builds sharp 0.35.5 and libvips 8.18.7 for baseline
+  x86-64, including processors without SSE4.1 or SSE4.2. Build instructions:
+  container/build-image-library.sh.
+
+libvips — LGPL-2.1-or-later
+  https://github.com/libvips/libvips/releases/tag/v8.18.7
+  Unmodified corresponding source:
+  https://github.com/libvips/libvips/releases/download/v8.18.7/vips-8.18.7.tar.xz
+  The amd64 image includes its license at
+  /opt/hauser-vips/share/licenses/libvips/LICENSE. Codec and supporting
+  libraries are Alpine packages under their respective licenses; sources
+  and build recipes: https://gitlab.alpinelinux.org/alpine/aports.
+
 Build tooling (Svelte, Vite, TypeScript, Vitest) is MIT licensed; see the
 respective packages in app/package.json.
 

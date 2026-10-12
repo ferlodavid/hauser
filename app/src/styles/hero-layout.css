@@ -190,6 +190,13 @@
   box-shadow: var(--elevation-overlay-shadow);
   overflow: hidden;
 }
+.home-stage .home-panel {
+  /* Große Raumauswahl oder wenig Höhe: die gesamte Karte bleibt erreichbar,
+     statt die separat scrollende Steuerung bis auf null zusammenzudrücken. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
 .home-stage.has-two-slots .home-panel {
   min-width: var(--slot-min);
 }
@@ -260,7 +267,8 @@
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  touch-action: pan-x;
+  /* Horizontal blättern, vertikal die umgebende Kontrollfläche scrollen. */
+  touch-action: manipulation;
 }
 .room-page-viewport::-webkit-scrollbar { display: none; }
 .room-page {
@@ -360,6 +368,10 @@
   overscroll-behavior: contain;
   padding: var(--space-5);
   border-top: 1px solid var(--color-border);
+}
+.home-stage .panel-controls {
+  flex: 1 0 auto;
+  overflow: visible;
 }
 /* ── Globales Klima-Dock in der Bottom-Leiste (B-13, Vorbild Hauser) ──
    Zentrale Synchron-Steuerung links in der TabBar → aus JEDEM Screen erreichbar.
@@ -884,6 +896,11 @@
   }
 
   [data-shell="panel"] .panel-controls {
+    /* Hochkant schwebt die Raumauswahl außerhalb der Karte. Hier gehört
+       der Scrollbereich weiterhin ausschließlich der Steuerung. */
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border-top: 0;
     border-radius: inherit;
   }

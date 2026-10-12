@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error Native Node ESM Servermodul.
-import { createNotificationRulesStore, serveNotifications } from '../../server/notification-rules.mjs';
+import { createNotificationRulesStore, serveNotifications, notificationAutomationSpecs, syncNotificationAutomations } from '../../server/notification-rules.mjs';
 
 const dirs: string[] = [];
 afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true }); });
@@ -40,6 +40,45 @@ function put(service: unknown, body: unknown): Promise<{ status: number; payload
 }
 
 describe('Benachrichtigungsregeln am Server', () => {
+  it('räumt eine Regel erst auf, wenn keiner ihrer aktiven Auslöser mehr zutrifft', () => {
+    const source = rule(1);
+    source.triggers[1].enabled = true;
+    const specs = notificationAutomationSpecs([source]);
+    const cleanup = specs.find((spec: { config: { description: string } }) => spec.config.description.endsWith('/ resolved'));
+    expect(cleanup.config.use_blueprint.input.notification_id).toBe('hauser_rule_doors_windows_fenster_1');
+    expect(cleanup.config.use_blueprint.input.active_triggers).toEqual(source.triggers);
+    expect(notificationAutomationSpecs([{ ...source, category: 'laundry' }])).toHaveLength(2);
+    expect(notificationAutomationSpecs([{ ...source, enabled: false }])).toEqual([]);
+  });
+
+  it('aktualisiert installierte Blueprints auch ohne Push und lädt die Automationen neu', async () => {
+    const writes: Array<{ path: string; yaml: string; allow_override: boolean }> = [];
+    const services: unknown[] = [];
+    const source = rule(2);
+    const specs = notificationAutomationSpecs([source]);
+    const client = {
+      async ws(type: string, payload: { domain?: string; service?: string }) {
+        if (type === 'blueprint/list') return {
+          'hauser/notify-state-v1.yaml': {}, 'hauser/notify-resolved-v1.yaml': {},
+        };
+        if (type === 'blueprint/save') writes.push(payload as unknown as typeof writes[number]);
+        if (type === 'config/entity_registry/list') return [];
+        if (type === 'call_service') services.push(payload);
+        return {};
+      },
+      async rest(_method: string, path: string) {
+        const id = path.split('/').at(-1);
+        return { status: 200, body: specs.find((spec: { id: string }) => spec.id === id)?.config };
+      },
+    };
+    const result = await syncNotificationAutomations(client, [source]);
+    expect(result.unchanged).toBe(2);
+    expect(writes.map((entry) => entry.path)).toEqual(['hauser/notify-state-v1.yaml', 'hauser/notify-resolved-v1.yaml']);
+    expect(writes.every((entry) => entry.allow_override)).toBe(true);
+    expect(writes[0].yaml).toContain("state_attr(source_entity, 'friendly_name')");
+    expect(services).toEqual([{ domain: 'automation', service: 'reload' }]);
+  });
+
   it('speichert eine Regelliste, die größer als ein Kilobyte ist (ralleur/hauser#25)', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'hauser-rules-'));
     dirs.push(dir);

@@ -17,7 +17,9 @@ Each category has a colour for the border of its tiles.
 
 ## A rule
 
-A rule names an entity, the states that trigger it, a delay before it counts and, where it fits, a threshold to stay above or below. Every active rule becomes a Home Assistant automation built from one of three Hauser blueprints. Hauser keeps that set in step when you save.
+A rule names an entity, the states that trigger it, a delay before it counts and, where it fits, a threshold to stay above or below. Each enabled trigger becomes a Home Assistant automation. Hauser keeps that set in step when you save and updates installed blueprints when the server starts after an update.
+
+Rule notifications use the entity's current Home Assistant display name. Condition notifications disappear when none of that rule's enabled triggers still match, for example when CO₂ returns to the normal range or a window closes. Unknown or unavailable readings do not count as confirmation that a problem is resolved. A finished-laundry task stays until you dismiss it.
 
 - **Test send** shows what a rule will look like.
 - **History** comes from the Home Assistant logbook.
@@ -49,6 +51,20 @@ actions:
 ```
 
 Use it for what only your home knows: the mailbox sensor, the bin calendar, a leak detector, an awning still open in the evening. At most two tiles are visible at once; the panel and the phone in the browser show them, the iOS app does not yet.
+
+For a notification sent by your own automation, that automation also decides
+when its task is done. When the mailbox is emptied or the bins are taken out,
+dismiss it using the same id:
+
+```yaml
+actions:
+  - action: persistent_notification.dismiss
+    data:
+      notification_id: hauser_muell
+```
+
+Hauser rules linked to a sensor clear their own condition notifications.
+Hauser cannot infer whether a free-form reminder has been completed.
 
 ## Not yet
 

@@ -6,8 +6,9 @@
    SSE4.2 vorspielen — kann bereits das Laden mit SIGILL den Prozess beenden
    (Issue #29). Das ist kein abfangbarer JavaScript-Fehler. Deshalb wird der
    Linux-x64-Import zuerst in einem eigenen Prozess geprüft. Scheitert er,
-   laden wir die öffentliche sharp-API mit der portablen Wasm-Bindung, ohne
-   die native Bibliothek im Server noch einmal anzufassen.
+   laden wir die öffentliche sharp-API mit dem im Container mitgelieferten
+   Basis-x86-64-Build, sonst mit Wasm (das weiterhin SSE4.1 benötigt), ohne
+   die ungeeignete native Bibliothek im Server noch einmal anzufassen.
 
    Scheitert auch das, darf der Fehler den Dienst nicht mitreißen: bis hierhin
    hing der komplette Start am Bildmodul, ein altes Gerät bekam also gar kein
@@ -36,14 +37,26 @@ let reason = '';
 const WASM_FALLBACK = '@img/sharp-wasm32/sharp.node';
 const require = createRequire(import.meta.url);
 
-function portableSharp(): typeof SharpFactory {
+function compatibleSharp(): typeof SharpFactory {
   /* sharp 0.35's CJS binding loader normally tries native code before Wasm.
      Supply its binding through the module cache instead: the rest of the
      public API (including codecs and versions) still comes from sharp itself.
      This also skips locally built native bindings, not just npm binaries. */
   const bindingPath = fileURLToPath(new URL('./sharp.cjs', import.meta.resolve('sharp')));
   const binding = new Module(bindingPath);
-  binding.exports = require(WASM_FALLBACK);
+  /* The amd64 container supplies a baseline native build for CPUs that also
+     lack SSE4.1 (required by Wasm SIMD). Modern CPUs keep the npm binary. */
+  const baselinePath = process.env.HMI_SHARP_BASELINE_BINDING;
+  let replacement: unknown;
+  if (baselinePath) {
+    try {
+      replacement = require(baselinePath);
+      console.warn('[hauser] Using baseline x86-64 image processing.');
+    } catch (error) {
+      console.warn('[hauser] Baseline image processing could not be loaded:', error instanceof Error ? error.message : String(error));
+    }
+  }
+  binding.exports = replacement ?? require(WASM_FALLBACK);
   binding.loaded = true;
   require.cache[bindingPath] = binding;
   return require('sharp');
@@ -72,8 +85,8 @@ try {
     ], { encoding: 'utf8', timeout: 10_000, stdio: ['ignore', 'ignore', 'pipe'] });
     if (probe.status !== 0) {
       const failure = probe.signal || probe.error?.message || probe.stderr?.trim() || `exit ${probe.status}`;
-      console.warn(`[hauser] Native sharp check failed (${failure}) — using portable image processing.`);
-      loaded = portableSharp();
+      console.warn(`[hauser] Native sharp check failed (${failure}) — using compatible image processing.`);
+      loaded = compatibleSharp();
     }
   }
   loaded ??= (await import('sharp')).default;

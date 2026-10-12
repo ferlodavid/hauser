@@ -840,6 +840,13 @@ export function createHmiServer(
       }
     },
   };
+  // Bestehende Installationen erhalten korrigierte Blueprints auch ohne
+  // erneutes Speichern ihrer Regeln nach dem Update.
+  const savedNotifications = notificationsService.store.read();
+  if (savedNotifications.rules.length) {
+    void notificationsService.sync(savedNotifications.rules, savedNotifications.push)
+      .catch(() => console.warn('[notifications] Home Assistant rule sync failed; save rules to retry.'));
+  }
   /* Kalendermomente: Erkennung gehört dem Server, nicht dem Browser. Er liest
      Termine und Wetterlage selbst und merkt sich nur die Schneesaison. */
   /* Fehlerbuch (R58): Server, Oberfläche und App tragen ein; die Werkstatt

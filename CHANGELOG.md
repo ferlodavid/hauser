@@ -3,6 +3,22 @@
 All notable user-visible changes to Hauser are documented here. The project uses
 Semantic Versioning for its public release line.
 
+## [0.43.5] - 2026-10-12
+
+- Notification rules show the current Home Assistant entity name. Condition
+  notifications disappear when none of the rule's enabled triggers still match;
+  missing readings do not count as resolution, and finished laundry stays for
+  acknowledgement. Existing rules receive the updated blueprints on startup.
+- The native iOS notification-rule editor now sends the server's trigger
+  format correctly, including numeric thresholds and zero-delay state rules.
+- Image processing on older x86-64 hosts now has a native baseline fallback
+  for CPUs that cannot run the WebAssembly SIMD fallback either. Modern hosts
+  keep their existing image library.
+- Room selection and device controls now scroll together on web panels and
+  in the native iPad app, keeping lower switches reachable when room cards
+  take up the available height. Vertical touch scrolling also works when
+  starting on the web room selector.
+
 ## [0.43.4] - 2026-10-11
 
 - Scenes now keep checking actual device states until every remaining target

@@ -11,6 +11,7 @@
   import { notifications } from '../state/notifications.svelte.ts';
   import { normalizeLaundryState, type HmiNotification } from '../state/notifications.ts';
   import { notificationRules } from '../state/notification-rules.svelte.ts';
+  import { deviceManager } from '../state/device-manager.svelte.ts';
   import { categoryById, categoryColor } from '../state/notification-categories.ts';
   import { categoryForTestNotificationId, ruleForNotificationId } from '../state/notification-rules.ts';
 
@@ -62,7 +63,7 @@
       type: categoryId
         ? categoryColor(categoryId, testCategory ? notificationRules.draftColors : notificationRules.colors)
         : 'info',
-      title: item.title,
+      title: deviceManager.catalog.find((source) => source.entityId === rule?.entityId)?.name ?? item.title,
       message: item.message,
       icon: category?.icon ?? 'i-bell',
       priority: rule?.category === 'safety' ? 90 : 50,
