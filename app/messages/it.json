@@ -2170,5 +2170,9 @@
   "rimg_object_appliance": "Elettrodomestico",
   "rimg_object_bin": "Cestino",
   "rimg_object_toy": "Giocattolo",
-  "rimg_object_solar": "Pannello solare"
+  "rimg_object_solar": "Pannello solare",
+  "music_query": "Brano, album, artista o stazione",
+  "music_play": "Riproduci",
+  "music_setup_hint": "Configura Music Assistant in Home Assistant per mostrare qui i tuoi lettori.",
+  "music_error": "Impossibile caricare o avviare la musica."
 }

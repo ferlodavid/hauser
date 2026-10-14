@@ -56,6 +56,13 @@ export function createAppCommandService({ resolveAccess, fetchImpl = fetch, time
 
   return {
     async command({ domain, service, entityId, data }) {
+      if (domain === 'persistent_notification' && service === 'dismiss' && entityId === '') {
+        if (typeof data?.notification_id !== 'string' || !data.notification_id.startsWith('hauser_') || data.notification_id.length > 200) {
+          throw Object.assign(new Error('Invalid notification.'), { code: 'COMMAND_INVALID', status: 400 });
+        }
+        await haFetch('services/persistent_notification/dismiss', { method: 'POST', body: JSON.stringify({ notification_id: data.notification_id }) });
+        return;
+      }
       if (!ENTITY_ID.test(entityId) || !SERVICE_NAME.test(domain) || !SERVICE_NAME.test(service)) {
         throw Object.assign(new Error('Ungültiger Befehl.'), { code: 'COMMAND_INVALID', status: 400 });
       }
@@ -64,6 +71,12 @@ export function createAppCommandService({ resolveAccess, fetchImpl = fetch, time
         ? { ...data, item: data.item.replace(/#hauser-\d+$/, '') }
         : data;
       await haFetch(`services/${domain}/${service}`, { method: 'POST', body: JSON.stringify({ entity_id: entityId, ...(payload ?? {}) }) });
+    },
+    async music() {
+      const all = await haJson('states');
+      return (Array.isArray(all) ? all : [])
+        .filter((s) => typeof s?.entity_id === 'string' && s.entity_id.startsWith('media_player.') && typeof s.attributes?.mass_player_type === 'string')
+        .map((s) => ({ entityId: s.entity_id, state: s.state ?? null, attributes: s.attributes, changedAt: s.last_changed ?? null }));
     },
     /** `todo.*`-Listen für die App: ohne Entität die Listen selbst, mit Entität deren Einträge.
         Die App hat keinen WebSocket; `todo.get_items` liefert die Einträge als Service-Antwort. */
@@ -153,7 +166,7 @@ export async function serveAppCommands(req, res, { service, allowedOrigins }) {
   if (url.pathname === '/api/app/states' && req.method === 'GET') {
     const ids = String(url.searchParams.get('ids') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
     try {
-      jsonResponse(res, 200, { ok: true, states: await service.states(ids) }, { 'cache-control': 'no-store' });
+      jsonResponse(res, 200, { ok: true, states: url.searchParams.get('source') === 'music-assistant' ? await service.music() : await service.states(ids) }, { 'cache-control': 'no-store' });
     } catch (error) { fail(res, error); }
     return;
   }

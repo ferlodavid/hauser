@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
+  import MusicAssistant from '../components/MusicAssistant.svelte';
   import { appState } from '../state/app.svelte.ts';
   import {
     mergedMedia, mediaStateLabel, mediaPending, mediaReconcile, mediaPosition,
@@ -49,6 +50,7 @@
 <!-- ── Media (docs/07 Screen 3): MediaControl Expanded + Room-Selector ── -->
 <div class="screen-inner" class:phone-page={phone} class:phone-media={phone}>
   <h1 class="screen-title" bind:this={titleAnchor} tabindex="-1">Media</h1>
+  <MusicAssistant />
   <section class="detail-section">
     <span class="caps-label">{m.media_room()}</span>
     <div class="select-grid">

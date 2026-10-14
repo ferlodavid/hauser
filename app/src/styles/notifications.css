@@ -10,6 +10,30 @@
   pointer-events: none;
 }
 
+.notification-stack { display: grid; gap: var(--space-2); }
+.notification-inbox-button { display: flex; align-items: center; gap: var(--space-2); justify-self: end; pointer-events: auto; }
+.notification-layer.is-sidebar { left: auto; right: var(--space-4); transform: none; }
+.notification-layer.is-sidebar .notification-stack { max-height: calc(100dvh - var(--space-8) * 5); overflow-y: auto; overscroll-behavior: contain; }
+.notification-layer.is-sidebar.is-hidden .notification-stack { display: none; }
+.notification-inbox {
+  width: min(calc(100vw - var(--space-8)), calc(var(--space-8) * 16));
+  max-height: calc(100dvh - var(--space-8) * 2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-1);
+  color: var(--color-text-primary);
+  box-shadow: var(--elevation-overlay-shadow);
+}
+.notification-inbox::backdrop { background: color-mix(in srgb, var(--color-surface-0) 70%, transparent); }
+.notification-inbox header, .notification-inbox-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.notification-inbox header { margin-bottom: var(--space-4); }
+.notification-inbox h2 { font-size: var(--text-xl); }
+.notification-inbox article { padding-block: var(--space-4); border-top: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.notification-inbox-message { white-space: pre-wrap; margin-block: var(--space-2); }
+.notification-inbox small { color: var(--color-text-secondary); }
+.notification-inbox-actions { justify-content: flex-end; margin-top: var(--space-3); }
+
 .notification-tile-shell {
   position: relative;
   /* Im Glasstil trägt die Hülle selbst die Milchglasscheibe (on-image.css):

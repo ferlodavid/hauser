@@ -173,6 +173,8 @@
   const statusIsError = $derived(notificationRules.status.kind === 'error' || notificationRules.status.kind === 'ha-error');
 </script>
 
+<button class="secondary-btn pressable" type="button" onclick={() => { window.dispatchEvent(new Event('hauser:notifications')); }}>{m.settings_section_notifications_label()}</button>
+
 {#snippet ruleCard(rule: NotificationRule)}
   <article class="notif-rule" class:is-off={!rule.enabled} aria-labelledby="notif-rule-{rule.id}">
     <header class="notif-rule-head">

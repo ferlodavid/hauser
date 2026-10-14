@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.44.0 - 2026-10-14
+
+- A glance: a scrollable notification sidebar follows the room controls'
+  hide delay, and a visible count opens every active message. Opening does
+  not dismiss notifications. Native iOS receives and dismisses HA messages.
+- Room: Music Assistant players have playback, volume and starting music
+  by name in web and native media screens. Library browsing and queue
+  editing remain outside this first integration.
+- The notification guide includes a last-caller automation example.
+
 ## 0.43.5 - 2026-10-12
 
 - Notification rules show the current Home Assistant entity name. Condition

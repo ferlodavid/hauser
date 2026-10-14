@@ -35,7 +35,23 @@ Cycle detection stays in Home Assistant.
 
 ## How notifications appear
 
-As tiles in the notification layer on the panel, and flowing with the content on the phone.
+On the room screen, the panel lists notifications in a scrollable sidebar on
+the right. It follows the control panel's automatic-hide setting and delay;
+a touch brings it back. The notification count remains visible while the
+sidebar is hidden.
+
+On the phone in the browser, the first two tiles flow with the content. Tap
+**Notifications**, including the **+N** count, to read every active message
+in full. Opening a message does not dismiss it. The same list is available
+from notification settings.
+
+The native iPhone and iPad app has a notifications list for both Home
+Assistant and Apple Home. With Home Assistant, it also receives `hauser_`
+persistent notifications and dismisses them in their HA source, so connected
+screens follow the change. With Apple Home, it shows the states, doorbell
+events and due reminders observed by the app; completing a reminder writes
+to its configured source. An open window remains visible until it closes.
+The `hauser://open?screen=notifications` link opens this list in the native app.
 
 ## Send your own notification
 
@@ -50,7 +66,7 @@ actions:
       message: Paper and packaging go out tonight.
 ```
 
-Use it for what only your home knows: the mailbox sensor, the bin calendar, a leak detector, an awning still open in the evening. At most two tiles are visible at once; the panel and the phone in the browser show them, the iOS app does not yet.
+Use it for what only your home knows: the mailbox sensor, the bin calendar, a leak detector, an awning still open in the evening. The panel, phone browser and native iOS app receive these notifications while connected to Home Assistant.
 
 For a notification sent by your own automation, that automation also decides
 when its task is done. When the mailbox is emptied or the bins are taken out,
@@ -66,6 +82,37 @@ actions:
 Hauser rules linked to a sensor clear their own condition notifications.
 Hauser cannot infer whether a free-form reminder has been completed.
 
+## Caller display
+
+If Home Assistant has a call-monitor integration, use its incoming-call state
+and caller attributes in an automation. For example, with the FRITZ!Box Call
+Monitor, replace **every** occurrence of `sensor.phone` below with your
+call-monitor sensor:
+
+```yaml
+alias: Caller on Hauser
+triggers:
+  - trigger: state
+    entity_id: sensor.phone
+    to: ringing
+actions:
+  - action: persistent_notification.create
+    data:
+      notification_id: hauser_call
+      title: Telephone
+      message: >-
+        {{ state_attr('sensor.phone', 'from_name')
+           or state_attr('sensor.phone', 'from')
+           or 'Unknown caller' }} is calling.
+```
+
+The same notification id replaces the previous caller. The message remains
+until dismissed; this is a last-caller display, not a complete call log or
+an indication that a call was missed. Phone-book names depend on the call
+monitor's configuration in Home Assistant.
+
 ## Not yet
 
-Multi-device dismissal, quiet hours, browser push and other channels are later work.
+A shared notification history, quiet hours, browser push and Apple Home
+history synchronisation are later work. Suspended native apps do not record
+an uninterrupted HomeKit event history.

@@ -20,7 +20,7 @@
   const celebratesDismissal = $derived(item.source === 'laundry:washer' || item.source === 'laundry:dryer');
   /* Nur Meldungen mit Zielort sind antippbar. Eine Kachel, die überall klickbar
      aussieht und nirgendwo hinführt, ist schlimmer als eine stumme. */
-  const openable = $derived(Boolean(item.action && onactivate));
+  const openable = $derived(Boolean(onactivate));
 
   function activate(): void {
     if (!openable || dismissing) return;

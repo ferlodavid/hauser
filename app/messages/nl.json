@@ -2169,5 +2169,9 @@
   "rimg_object_appliance": "Apparaat",
   "rimg_object_bin": "Prullenbak",
   "rimg_object_toy": "Speelgoed",
-  "rimg_object_solar": "Zonnepaneel"
+  "rimg_object_solar": "Zonnepaneel",
+  "music_query": "Nummer, album, artiest of zender",
+  "music_play": "Afspelen",
+  "music_setup_hint": "Stel Music Assistant in Home Assistant in om hier je spelers te tonen.",
+  "music_error": "De muziek kon niet worden geladen of gestart."
 }

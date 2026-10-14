@@ -3,7 +3,11 @@
   import '../../styles/notifications.css';
   import { untrack } from 'svelte';
   import NotificationTile from './NotificationTile.svelte';
-  import { followNotification } from '../state/notification-targets.ts';
+  import Icon from './Icon.svelte';
+  import { nav } from '../state/nav.svelte.ts';
+  import { ambientState } from '../state/ambient.svelte.ts';
+  import { layoutManager } from '../state/layout-manager.svelte.ts';
+  import type { Component } from 'svelte';
   import { m } from '../../paraglide/messages.js';
   import { runtime } from '../adapter/runtime.svelte.ts';
   import type { PersistentNotification } from '../adapter/types.ts';
@@ -18,6 +22,33 @@
   let now = $state(Date.now());
   let remote = $state<PersistentNotification[]>([]);
   let layer = $state<HTMLElement | null>(null);
+  let width = $state(0);
+  let hidden = $state(false);
+  let inboxOpen = $state(false);
+  $effect(() => {
+    const open = () => { inboxOpen = true; };
+    const resize = () => { width = window.innerWidth; };
+    resize();
+    window.addEventListener('hauser:notifications', open);
+    window.addEventListener('resize', resize);
+    return () => { window.removeEventListener('hauser:notifications', open); window.removeEventListener('resize', resize); };
+  });
+  let Inbox = $state<Component<{ onclose: () => void }> | null>(null);
+  const sidebar = $derived(width >= 768 && nav.screen === 'home' && !ambientState.active);
+
+  $effect(() => {
+    if (inboxOpen && !Inbox) void import('./NotificationInbox.svelte').then((module) => { Inbox = module.default; });
+  });
+
+  $effect(() => {
+    if (!sidebar || !layoutManager.applied.panelAutoHide || layoutManager.open || inboxOpen) { hidden = false; return; }
+    const delay = layoutManager.applied.panelAutoHideSeconds * 1000;
+    let timer = setTimeout(() => { hidden = true; }, delay);
+    const restart = () => { hidden = false; clearTimeout(timer); timer = setTimeout(() => { hidden = true; }, delay); };
+    const events = ['pointerdown', 'pointermove', 'wheel', 'keydown'] as const;
+    for (const type of events) window.addEventListener(type, restart, { capture: true, passive: true });
+    return () => { clearTimeout(timer); for (const type of events) window.removeEventListener(type, restart, { capture: true }); };
+  });
 
   $effect(() => { void notificationRules.load(); });
 
@@ -92,7 +123,7 @@
   $effect(() => {
     const node = layer;
     const root = document.documentElement;
-    if (!node) {
+    if (!node || width >= 768) {
       root.style.removeProperty('--notification-flow-height');
       return;
     }
@@ -114,17 +145,22 @@
   });
 </script>
 
+
 {#if notifications.items.length > 0}
-  <aside bind:this={layer} class="notification-layer" aria-label="Benachrichtigungen" aria-live="polite">
-    {#each notifications.items.slice(0, 2) as item (item.id)}
+  <aside bind:this={layer} class="notification-layer" class:is-sidebar={sidebar} class:is-hidden={hidden} aria-label={m.settings_section_notifications_label()}>
+    <button class="notification-inbox-button secondary-btn pressable" type="button" onclick={() => { inboxOpen = true; }}>
+      <Icon name="i-bell" cls="icon icon-md" /> {m.settings_section_notifications_label()} · {notifications.items.length}
+      {#if !sidebar && notifications.items.length > 2}<span>+{notifications.items.length - 2}</span>{/if}
+    </button>
+    <div class="notification-stack">
+    {#each (sidebar ? notifications.items : notifications.items.slice(0, 2)) as item (item.id)}
       <NotificationTile {item} {now}
                         ondismiss={() => notifications.dismiss(item.dedupeKey)}
-                        onactivate={() => {
-                          followNotification(item);
-                          notifications.dismiss(item.dedupeKey);
-                        }} />
+                        onactivate={() => { inboxOpen = true; }} />
     {/each}
+    </div>
   </aside>
 {/if}
 
+{#if inboxOpen && Inbox}<Inbox onclose={() => { inboxOpen = false; }} />{/if}
 <CameraPopupHost />

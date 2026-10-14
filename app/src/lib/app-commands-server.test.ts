@@ -5,6 +5,44 @@ import { createServer } from 'node:http';
 import { createAppCommandService, serveAppCommands } from '../../server/app-commands.mjs';
 
 describe('REST-Zugang für Widgets', () => {
+  it('starts a named Music Assistant item without an invalid generic music type', async () => {
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const service = createAppCommandService({
+      resolveAccess: () => ({ baseUrl: 'http://ha.local', token: 'test-only' }),
+      fetchImpl: async (url: string, init: RequestInit) => { calls.push({ url, body: JSON.parse(String(init.body)) }); return { ok: true }; },
+    });
+    await service.command({ domain: 'music_assistant', service: 'play_media', entityId: 'media_player.kitchen', data: { media_id: 'Queen - Innuendo' } });
+    expect(calls).toEqual([{ url: 'http://ha.local/api/services/music_assistant/play_media', body: { entity_id: 'media_player.kitchen', media_id: 'Queen - Innuendo' } }]);
+  });
+
+  it('discovers only Music Assistant players, preserving playback and unknown volume', async () => {
+    const service = createAppCommandService({
+      resolveAccess: () => ({ baseUrl: 'http://ha.local', token: 'test-only' }),
+      fetchImpl: async () => ({ ok: true, json: async () => [
+        { entity_id: 'media_player.music_kitchen', state: 'playing', attributes: { mass_player_type: 'player', friendly_name: 'Kitchen', media_title: 'Song', media_artist: 'Artist', volume_level: 0.4 } },
+        { entity_id: 'media_player.music_bedroom', state: 'unavailable', attributes: { mass_player_type: 'player', friendly_name: 'Bedroom' } },
+        { entity_id: 'media_player.original_speaker', state: 'playing', attributes: { friendly_name: 'Original speaker' } },
+        { entity_id: 'sensor.music', state: '1', attributes: { mass_player_type: 'player' } },
+      ] }),
+    });
+    expect(await service.music()).toEqual([
+      { entityId: 'media_player.music_kitchen', state: 'playing', attributes: { mass_player_type: 'player', friendly_name: 'Kitchen', media_title: 'Song', media_artist: 'Artist', volume_level: 0.4 }, changedAt: null },
+      { entityId: 'media_player.music_bedroom', state: 'unavailable', attributes: { mass_player_type: 'player', friendly_name: 'Bedroom' }, changedAt: null },
+    ]);
+  });
+
+  it('dismisses a Hauser notification without an entity target and rejects unrelated notifications', async () => {
+    const calls: Array<{ url: string; body: unknown }> = [];
+    const service = createAppCommandService({
+      resolveAccess: () => ({ baseUrl: 'http://ha.local', token: 'test-only' }),
+      fetchImpl: async (url: string, init: RequestInit) => { calls.push({ url, body: JSON.parse(String(init.body)) }); return { ok: true }; },
+    });
+    await service.command({ domain: 'persistent_notification', service: 'dismiss', entityId: '', data: { notification_id: 'hauser_call' } });
+    expect(calls).toEqual([{ url: 'http://ha.local/api/services/persistent_notification/dismiss', body: { notification_id: 'hauser_call' } }]);
+    await expect(service.command({ domain: 'persistent_notification', service: 'dismiss', entityId: '', data: { notification_id: 'unrelated' } })).rejects.toMatchObject({ code: 'COMMAND_INVALID' });
+    expect(calls).toHaveLength(1);
+  });
+
   it.each(['/api/app/states?ids=light.review', '/api/app/persons', '/api/app/todo', '/api/app/todo?entity=todo.review'])(
     'meldet einen Timeout im Antwortkörper als 503 HA_UNAVAILABLE: %s', async (url) => {
       const upstream = createServer((_req: unknown, res: any) => {

@@ -2169,5 +2169,9 @@
   "rimg_object_appliance": "Haushaltsgerät",
   "rimg_object_bin": "Mülleimer",
   "rimg_object_toy": "Spielzeug",
-  "rimg_object_solar": "Solarmodul"
+  "rimg_object_solar": "Solarmodul",
+  "music_query": "Titel, Album, Interpret oder Sender",
+  "music_play": "Abspielen",
+  "music_setup_hint": "Music Assistant in Home Assistant einrichten, damit hier deine Player erscheinen.",
+  "music_error": "Musik konnte nicht geladen oder gestartet werden."
 }

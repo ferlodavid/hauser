@@ -2170,5 +2170,9 @@
   "rimg_object_appliance": "Urządzenie",
   "rimg_object_bin": "Kosz",
   "rimg_object_toy": "Zabawka",
-  "rimg_object_solar": "Panel słoneczny"
+  "rimg_object_solar": "Panel słoneczny",
+  "music_query": "Utwór, album, wykonawca lub stacja",
+  "music_play": "Odtwórz",
+  "music_setup_hint": "Skonfiguruj Music Assistant w Home Assistant, aby wyświetlić tu odtwarzacze.",
+  "music_error": "Nie udało się wczytać ani uruchomić muzyki."
 }

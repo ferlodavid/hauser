@@ -3,6 +3,24 @@
 All notable user-visible changes to Hauser are documented here. The project uses
 Semantic Versioning for its public release line.
 
+## [0.44.0] - 2026-10-14
+
+- A glance: room notifications occupy a scrollable sidebar on the right and
+  follow the room controls' automatic-hide delay. A visible count opens every
+  current message in full, including those beyond the first two on phones.
+  Opening notifications no longer dismisses them.
+- The native iOS app receives Home Assistant's `hauser_` notifications and
+  dismisses them at their source. Its notifications list also works with
+  Apple Home states, observed doorbells and due reminders; notification links
+  now open that list. Open windows remain until closed, and completing a
+  reminder updates its source.
+- Room: Music Assistant players are discovered through Home Assistant in web
+  and native media screens, with current title/artist, playback controls,
+  volume and starting a track, album, artist or station by name. Music
+  library browsing and queue editing are not part of this first integration.
+- The notification guide includes a call-monitor automation for the last
+  caller display. Recipe integration remains a recorded suggestion.
+
 ## [0.43.5] - 2026-10-12
 
 - Notification rules show the current Home Assistant entity name. Condition

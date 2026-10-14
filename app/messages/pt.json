@@ -2169,5 +2169,9 @@
   "rimg_object_appliance": "Eletrodoméstico",
   "rimg_object_bin": "Caixote do lixo",
   "rimg_object_toy": "Brinquedo",
-  "rimg_object_solar": "Painel solar"
+  "rimg_object_solar": "Painel solar",
+  "music_query": "Faixa, álbum, artista ou estação",
+  "music_play": "Reproduzir",
+  "music_setup_hint": "Configure o Music Assistant no Home Assistant para mostrar aqui os seus leitores.",
+  "music_error": "Não foi possível carregar ou iniciar a música."
 }
