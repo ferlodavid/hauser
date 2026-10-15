@@ -83,7 +83,7 @@ const EXPECTED_REFUSALS = [
   [503, /^\/api\/shopping\/notion/],      // Notion nicht eingerichtet
   [409, /^\/api\/household-modules\/media/], // Media ohne Mediaplayer
   [404, /^\/hermes\//],                    // KI-Anpassung ist in der öffentlichen Fassung aus; die App zeigt „nicht verfügbar"
-  [500, /^\/api\/camera_proxy/],           // Kamera in HA nicht erreichbar — das Stresshaus hat solche
+  [503, /^\/api\/camera_proxy/],           // Kamera in HA nicht erreichbar — das Stresshaus hat solche
   [502, /^\/api\/camera_proxy/],
 ];
 

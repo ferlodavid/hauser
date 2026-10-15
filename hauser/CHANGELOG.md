@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.45.0 - 2026-10-15
+
+- Room on the phone: an eye button hides the controls and leaves only the
+  room image, as in the iOS app.
+- Unreachable cameras no longer count as Hauser server errors.
+
 ## 0.44.0 - 2026-10-14
 
 - A glance: a scrollable notification sidebar follows the room controls'

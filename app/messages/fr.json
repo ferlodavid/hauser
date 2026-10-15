@@ -2174,5 +2174,7 @@
   "music_query": "Titre, album, artiste ou station",
   "music_play": "Lire",
   "music_setup_hint": "Configurez Music Assistant dans Home Assistant pour afficher vos lecteurs ici.",
-  "music_error": "La musique n’a pas pu être chargée ou lancée."
+  "music_error": "La musique n’a pas pu être chargée ou lancée.",
+  "room_controls_hide": "Masquer les commandes",
+  "room_controls_show": "Afficher les commandes"
 }

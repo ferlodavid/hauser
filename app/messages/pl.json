@@ -2174,5 +2174,7 @@
   "music_query": "Utwór, album, wykonawca lub stacja",
   "music_play": "Odtwórz",
   "music_setup_hint": "Skonfiguruj Music Assistant w Home Assistant, aby wyświetlić tu odtwarzacze.",
-  "music_error": "Nie udało się wczytać ani uruchomić muzyki."
+  "music_error": "Nie udało się wczytać ani uruchomić muzyki.",
+  "room_controls_hide": "Ukryj elementy sterowania",
+  "room_controls_show": "Pokaż elementy sterowania"
 }

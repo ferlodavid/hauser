@@ -2173,5 +2173,7 @@
   "music_query": "Titel, Album, Interpret oder Sender",
   "music_play": "Abspielen",
   "music_setup_hint": "Music Assistant in Home Assistant einrichten, damit hier deine Player erscheinen.",
-  "music_error": "Musik konnte nicht geladen oder gestartet werden."
+  "music_error": "Musik konnte nicht geladen oder gestartet werden.",
+  "room_controls_hide": "Bedienung ausblenden",
+  "room_controls_show": "Bedienung einblenden"
 }

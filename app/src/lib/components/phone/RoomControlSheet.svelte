@@ -43,6 +43,7 @@
      nirgends ein schwarzer Grund dazwischen (Owner-Befund 2026-09-12). */
   let layerA = $state<HeroImageCandidate | null>(null);
   let layerB = $state<HeroImageCandidate | null>(null);
+  let controlsHidden = $state(false);
   let front = $state<'a' | 'b'>('a');
   const shownHero = $derived(front === 'a' ? layerA : layerB);
   let heroRequest = 0;
@@ -321,7 +322,7 @@
        seiner Höhe — dieselbe Geste wie zum Öffnen, nur zurück. Sie gilt auf der
        ganzen Fläche, nicht nur am Kopf: solange die Liste oben steht, gehört
        die Abwärtsbewegung dem Sheet, danach wieder dem Scrollen. -->
-  <div class="room-sheet on-image" class:has-hero={shownHero !== null} bind:this={dialog} role="dialog" aria-modal="true" aria-labelledby="room-sheet-title" tabindex="-1" onkeydown={onkeydown} out:sheetExit
+  <div class="room-sheet on-image" class:has-hero={shownHero !== null} bind:this={dialog} role="dialog" aria-modal="true" aria-labelledby={controlsHidden ? undefined : 'room-sheet-title'} aria-label={controlsHidden ? room.name : undefined} tabindex="-1" onkeydown={onkeydown} out:sheetExit
        use:swipedown={{ onSwipe: () => onclose('close'), surface: () => dialog,
                         atTop: (t) => Boolean(t?.closest('.room-sheet-title'))
                                       || (scrollEl?.scrollTop ?? 0) <= 0,
@@ -352,18 +353,24 @@
          style:transform={dragX === 0 ? undefined : `translateX(${dragX}px)`}>
       {#key room.id}
         <div in:roomEnter out:roomLeave>
-          <div class="room-sheet-head">
-            <h2 class="room-sheet-title" bind:this={title} id="room-sheet-title" tabindex="-1">{room.name}</h2>
-            <!-- Drei Punkte statt Schließen: öffnen die Raumkonfig (Owner-Wunsch
-                 2026-09-12). Geschlossen wird per Wisch nach unten oder Tipp daneben. -->
-            <button class="room-sheet-more pressable" type="button" aria-label={m.room_edit_devices_label({ room: room.name })} onclick={() => openRoomEdit(room.id, 'devices', 'sheet')}>
-              <Icon name="i-dots-horizontal" cls="icon icon-md" />
-            </button>
+          <div class="room-sheet-head" class:is-controls-hidden={controlsHidden}>
+            {#if !controlsHidden}<h2 class="room-sheet-title" bind:this={title} id="room-sheet-title" tabindex="-1">{room.name}</h2>{/if}
+            <div class="room-sheet-head-actions">
+              <button class="room-sheet-more pressable" type="button" aria-label={controlsHidden ? m.room_controls_show() : m.room_controls_hide()} onclick={() => { controlsHidden = !controlsHidden; if (controlsHidden && scrollEl) scrollEl.scrollTop = 0; }}>
+                <Icon name={controlsHidden ? 'i-eye' : 'i-eye-off'} cls="icon icon-md" />
+              </button>
+              {#if !controlsHidden}
+                <!-- Drei Punkte öffnen die Raumkonfig; geschlossen wird per Wisch oder Tipp daneben. -->
+                <button class="room-sheet-more pressable" type="button" aria-label={m.room_edit_devices_label({ room: room.name })} onclick={() => openRoomEdit(room.id, 'devices', 'sheet')}>
+                  <Icon name="i-dots-horizontal" cls="icon icon-md" />
+                </button>
+              {/if}
+            </div>
           </div>
           <!-- 1:1 die Tablet-Seitenleiste: gleiche Controls, gleiche Long-Press-
                Gesten und Overlays (Geräte-Detail, Szenen-Editor) — eine Erfahrung
                aus einem Guss auf beiden Shells. -->
-          <RoomControls {room} stackedClimate statusStrip />
+          {#if !controlsHidden}<RoomControls {room} stackedClimate statusStrip />{/if}
         </div>
       {/key}
     </div>

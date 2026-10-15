@@ -3,6 +3,14 @@
 All notable user-visible changes to Hauser are documented here. The project uses
 Semantic Versioning for its public release line.
 
+## [0.45.0] - 2026-10-15
+
+- Room on the phone: an eye button hides the room controls so only the room
+  image remains; tapping it again brings them back, as in the iOS app.
+- Cameras that Home Assistant cannot reach (offline, battery cameras without
+  an image) are answered as unavailable instead of being recorded as Hauser
+  server errors, so the error book no longer fills up with them.
+
 ## [0.44.0] - 2026-10-14
 
 - A glance: room notifications occupy a scrollable sidebar on the right and

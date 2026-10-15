@@ -82,7 +82,7 @@ const SNAPSHOT = {
   entities: [{ entity_id: 'light.living_ceiling', area_id: 'living', device_id: 'device-1' }],
 };
 
-function fakeSupervisorClient({ available = true, fail = null as string | null } = {}) {
+function fakeSupervisorClient({ available = true, fail = null as string | null, cameraStatus = 200 } = {}) {
   const closed: boolean[] = [];
   const streamed: string[] = [];
   const factory = () => ({
@@ -102,6 +102,7 @@ function fakeSupervisorClient({ available = true, fail = null as string | null }
     stream: async (path: string) => {
       if (fail) throw Object.assign(new Error('internal access rejected'), { code: fail, status: 502 });
       streamed.push(path);
+      if (cameraStatus >= 400) return new Response('{"message":"Kamera nicht erreichbar"}', { status: cameraStatus });
       return new Response('jpeg-bytes', { status: 200, headers: { 'content-type': 'image/jpeg' } });
     },
   });
@@ -123,7 +124,7 @@ async function serve(overrides: Record<string, unknown> = {}) {
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as { port: number }).port;
-  return { ...files, base: `http://127.0.0.1:${port}` };
+  return { ...files, server, base: `http://127.0.0.1:${port}` };
 }
 
 describe('Setup-Auskunft über die Betriebsart', () => {
@@ -277,6 +278,16 @@ describe('Kamera-Durchleitung im App-Modus', () => {
       `/api/hls/${token}/init.mp4`,
       `/api/hls/${token}/segment/7.m4s`,
     ]);
+  });
+
+  it('meldet eine in HA nicht erreichbare Kamera als 503, nicht als eigenen Serverfehler', async () => {
+    /* Stresshaus #32–#35, #38: Akkukameras ohne Bild liefen zehntausendfach als 500 ins Fehlerbuch. */
+    const factory = fakeSupervisorClient({ cameraStatus: 500 });
+    const { base, server } = await serve({ haConnectionMode: 'supervisor', haSupervisorClientFactory: factory });
+    const response = await fetch(`${base}/api/camera_proxy/camera.akku?token=abc`);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, code: 'HA_CAMERA_UNAVAILABLE' });
+    expect((server as unknown as { errorBook: { list: () => unknown[] } }).errorBook.list()).toEqual([]);
   });
 
   it('lehnt fremde Pfade und den direkten Modus ab', async () => {

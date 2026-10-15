@@ -2173,5 +2173,7 @@
   "music_query": "Track, album, artist or station",
   "music_play": "Play",
   "music_setup_hint": "Set up Music Assistant in Home Assistant to show your players here.",
-  "music_error": "Music could not be loaded or started."
+  "music_error": "Music could not be loaded or started.",
+  "room_controls_hide": "Hide controls",
+  "room_controls_show": "Show controls"
 }

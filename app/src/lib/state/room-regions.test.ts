@@ -32,11 +32,12 @@ afterEach(() => {
 describe('Flächen der mitgelieferten Bilder', () => {
   it('liegen für jeden Raum bei, dessen Standardbild eine trübe Fassung hat', () => {
     expect(Object.keys(mitgeliefert).sort())
-      .toEqual(['bad', 'kinderzimmer', 'kueche', 'schlafzimmer', 'wohnzimmer']);
-    /* Ohne Fenster zöge im Standardbild kein Regen — bis auf das Bad, das
-       keines hat, muss jeder Raum mindestens eines mitbringen. */
+      .toEqual(['bad', 'flur', 'kinderzimmer', 'kueche', 'schlafzimmer', 'wohnzimmer']);
+    /* Ohne Fenster zöge im Standardbild kein Regen — bis auf Bad und Flur, die
+       keines haben, muss jeder Raum mindestens eines mitbringen. Der Flur
+       bringt nur seinen Boden mit, auf dem Kurt in der iOS-App läuft. */
     for (const [room, regions] of Object.entries(mitgeliefert)) {
-      if (room === 'bad') continue;
+      if (room === 'bad' || room === 'flur') continue;
       expect(`${room}: ${regions.some((region) => region.kind === 'window')}`).toBe(`${room}: true`);
     }
   });

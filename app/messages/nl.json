@@ -2173,5 +2173,7 @@
   "music_query": "Nummer, album, artiest of zender",
   "music_play": "Afspelen",
   "music_setup_hint": "Stel Music Assistant in Home Assistant in om hier je spelers te tonen.",
-  "music_error": "De muziek kon niet worden geladen of gestart."
+  "music_error": "De muziek kon niet worden geladen of gestart.",
+  "room_controls_hide": "Bediening verbergen",
+  "room_controls_show": "Bediening tonen"
 }

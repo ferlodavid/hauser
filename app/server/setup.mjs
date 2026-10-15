@@ -501,6 +501,14 @@ export async function serveHaCameraProxy(req, res, { connectionMode, supervisorC
       const value = upstream.headers.get(name);
       if (value) headers[name] = value;
     }
+    /* Ein 5xx von HA heißt: Kamera nicht erreichbar (Akku leer, offline) — kein
+       Fehler dieses Servers. 503 statt durchgereichtem 500, damit das Fehlerbuch
+       nicht jede Wiederholung als Serverfehler zählt (Stresshaus #32–#35, #38). */
+    if (upstream.status >= 500) {
+      await upstream.body?.cancel().catch(() => {});
+      jsonResponse(res, 503, { ok: false, code: 'HA_CAMERA_UNAVAILABLE' }, { 'cache-control': 'no-store' });
+      return;
+    }
     res.writeHead(upstream.status, headers);
     if (!upstream.body) { res.end(); return; }
     Readable.fromWeb(upstream.body).on('error', () => res.end()).pipe(res);

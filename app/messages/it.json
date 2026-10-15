@@ -2174,5 +2174,7 @@
   "music_query": "Brano, album, artista o stazione",
   "music_play": "Riproduci",
   "music_setup_hint": "Configura Music Assistant in Home Assistant per mostrare qui i tuoi lettori.",
-  "music_error": "Impossibile caricare o avviare la musica."
+  "music_error": "Impossibile caricare o avviare la musica.",
+  "room_controls_hide": "Nascondi i comandi",
+  "room_controls_show": "Mostra i comandi"
 }

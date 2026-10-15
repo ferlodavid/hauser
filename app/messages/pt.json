@@ -2173,5 +2173,7 @@
   "music_query": "Faixa, álbum, artista ou estação",
   "music_play": "Reproduzir",
   "music_setup_hint": "Configure o Music Assistant no Home Assistant para mostrar aqui os seus leitores.",
-  "music_error": "Não foi possível carregar ou iniciar a música."
+  "music_error": "Não foi possível carregar ou iniciar a música.",
+  "room_controls_hide": "Ocultar controlos",
+  "room_controls_show": "Mostrar controlos"
 }

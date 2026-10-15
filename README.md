@@ -18,7 +18,7 @@ For Home Assistant — and for Apple Home with the native iPhone and iPad app.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="website/media/home-dark-1100.webp">
-  <img src="website/media/hero-home-1100.webp" alt="Hauser’s real web interface: the living room fills the screen, with rooms, scenes, lights and heating together on the left." width="1100" height="623">
+  <img src="website/media/hero-home-1100.webp" alt="Hauser’s real web interface: the living room fills the screen, with rooms, scenes, lights and heating together on the left." width="1100">
 </picture>
 
 *The web demo, with simulated devices. [Explore it in your browser](https://ralleur.github.io/hauser/demo/) — nothing connects to your home.*
@@ -97,7 +97,7 @@ and [updates and backups](https://ralleur.github.io/hauser/docs/getting-started/
 
 ## Status and expectations
 
-Current server release: [**v0.44.0**](https://github.com/ralleur/hauser/releases/tag/v0.44.0).
+Current server release: [**v0.45.0**](https://github.com/ralleur/hauser/releases/tag/v0.45.0).
 The native iOS app has its own TestFlight releases.
 
 Hauser began on its maker’s wall panel and is still a personal project in
