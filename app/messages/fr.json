@@ -284,6 +284,7 @@
   "dev_mode": "Mode",
   "dev_reading": "Mesure",
   "dev_show_name": "Nom sur la tuile",
+  "dev_counts_as_light": "Compte pour l'ampoule de la pièce",
   "dev_playback": "Lecture",
   "dev_paused": "En pause",
   "dev_playing": "En cours",

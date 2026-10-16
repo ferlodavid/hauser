@@ -283,6 +283,7 @@
   "dev_mode": "Modus",
   "dev_reading": "Meting",
   "dev_show_name": "Naam op de tegel",
+  "dev_counts_as_light": "Telt mee voor de lamp van de kamer",
   "dev_playback": "Afspelen",
   "dev_paused": "Gepauzeerd",
   "dev_playing": "Aan het afspelen",

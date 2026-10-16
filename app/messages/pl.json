@@ -284,6 +284,7 @@
   "dev_mode": "Tryb",
   "dev_reading": "Odczyt",
   "dev_show_name": "Nazwa na kafelku",
+  "dev_counts_as_light": "Liczy się do żarówki pokoju",
   "dev_playback": "Odtwarzanie",
   "dev_paused": "Wstrzymane",
   "dev_playing": "Odtwarzane",

@@ -13,6 +13,7 @@ import {
   newGroupId,
   saveDeviceConfig,
   seedCatalog,
+  setDeviceCountsAsLight,
   setDeviceName,
   setDeviceNameVisibility,
   setDeviceVisibility,
@@ -82,6 +83,11 @@ export async function renameDevice(entityId: string, name: string): Promise<void
 /* Sensor-Kachel: Name neben dem Wert zeigen (Vorgabe: nur der Wert). */
 export function setDeviceShowName(entityId: string, showName: boolean): void {
   updateConfig(setDeviceNameVisibility(deviceManager.config, entityId, showName));
+}
+
+/* Glühbirne der Raumübersicht: zählt dieses Gerät mit? */
+export function setCountsAsLight(entityId: string, counts: boolean): void {
+  updateConfig(setDeviceCountsAsLight(deviceManager.config, entityId, counts));
 }
 
 /* ── Gerätegruppen (Owner-Wunsch 2026-09-13) ── */

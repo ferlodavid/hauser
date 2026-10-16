@@ -21,7 +21,7 @@
     mowerCommand, alarmCommand, setNumberValue, selectOption, pressButton, type AlarmAction,
   } from '../state/commands.ts';
   import { deviceDetail, closeDeviceDetail, finishDeviceDetailClose, openDeviceDetail } from '../state/overlay.svelte.ts';
-  import { isGroupableCategory } from '../state/device-config.ts';
+  import { countsForBulb, isGroupableCategory, isGroupEntityId } from '../state/device-config.ts';
   import { pulse } from '../actions/pulse.ts';
   import { LIGHT_COLOR_SWATCHES, tempTint, climateTint, lightLevel } from '../state/light-presets.ts';
   import { fanPresetIcon, fanPresetLabel, fanSpinDuration } from '../state/fan-presets.ts';
@@ -30,7 +30,7 @@
   import { defaultIconFor, iconForDevice, persistLightIconOverride, resetLightIconOverride } from '../state/light-icons.ts';
 
   import { binaryLabel, fmtSensor } from '../state/info-display.ts';
-  import { deviceManager, renameDevice, setDeviceShowName } from '../state/device-manager.svelte.ts';
+  import { deviceManager, renameDevice, setCountsAsLight, setDeviceShowName } from '../state/device-manager.svelte.ts';
   import { pressRemoteKey, remoteEntityFor, type RemoteKey } from '../state/remote-keys.ts';
   import { fmtTemp } from '../format.ts';
   import type {
@@ -46,6 +46,10 @@
   );
   const category = $derived(device?.category ?? 'light');
   const entityId = $derived(device?.entityId ?? '');
+  /* Glühbirne der Raumübersicht: nur Geräte, die dort überhaupt mitgezählt
+     werden könnten (Lichter, Schalter, Rollos, Saugroboter), und keine Gruppen. */
+  const counts = $derived(device ? countsForBulb(device) : true);
+  const bulbChoice = $derived(['light', 'switch', 'cover', 'vacuum'].includes(category) && !isGroupEntityId(entityId));
 
   // Gemergte Sicht (Server bzw. pending Intent); undefined tolerieren —
   // frisch eingeblendete Geräte haben ggf. noch keinen Wert (commands.ts).
@@ -952,6 +956,17 @@
                 </div>
               </section>
             {/if}
+          {/if}
+          {#if bulbChoice}
+            <section class="ld-section ld-switch-row">
+              <span id="device-counts-light-label">{m.dev_counts_as_light()}</span>
+              <button class="re-toggle pressable" type="button" role="switch"
+                      aria-checked={counts} class:is-on={counts}
+                      aria-labelledby="device-counts-light-label"
+                      onclick={() => setCountsAsLight(entityId, !counts)}>
+                <span class="re-toggle-knob"></span>
+              </button>
+            </section>
           {/if}
         </div>
       {/key}

@@ -647,6 +647,7 @@
   "dev_mode": "Modus",
   "dev_reading": "Messwert",
   "dev_show_name": "Name auf der Kachel",
+  "dev_counts_as_light": "Zählt für die Raum-Glühbirne",
   "dev_playback": "Wiedergabe",
   "dev_paused": "Pausiert",
   "dev_playing": "Läuft",
