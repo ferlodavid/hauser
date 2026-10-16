@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import neutralSmall from '../../../config/examples/neutral-small.json';
 import panelRoomSelector from '../components/PanelRoomSelector.svelte?raw';
 import { compileHouseholdConfig, parseHouseholdConfig } from '../config/household-config.ts';
@@ -12,7 +12,17 @@ import {
   seedCatalog,
   setDeviceCountsAsLight,
 } from './device-config.ts';
+import { setRoomCountsAsLight } from './bulb-choice.ts';
+import { appState } from './app.svelte.ts';
+import { deviceManager, updateConfig } from './device-manager.svelte.ts';
+import * as deviceConfigModule from './device-config.ts';
 import { projectPhoneRooms } from './phone-home.ts';
+
+/* Durchreichen, aber zählbar: so sieht der Test, wie oft gespeichert wird. */
+vi.mock('./device-config.ts', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./device-config.ts')>();
+  return { ...original, saveDeviceConfig: vi.fn(original.saveDeviceConfig) };
+});
 
 /* Ein Raum mit einer Lampe, einer Steckdose, einem Rollo und einem Sauger.
    `flags` bestimmt, was die Einrichtung je Gerät festgehalten hat; fehlt ein
@@ -151,5 +161,73 @@ describe('room lightbulb count (panel room selector)', () => {
 
   it('is wired to the same predicate in the component', () => {
     expect(panelRoomSelector).toMatch(/countsForBulb\(light\) && mergedLight\(room\.id, light\.id\)\?\.on/);
+  });
+});
+
+describe('room bulk choice', () => {
+  const mixed = () => runtimeRooms(projectedRoom({})).flatMap((room) => room.lights);
+  const flagsOf = (config: ReturnType<typeof setRoomCountsAsLight>) =>
+    Object.fromEntries(Object.entries(config.devices).map(([id, value]) => [id, value.countsAsLight]));
+
+  it('count only lights: lamps on, plug, blind and vacuum off', () => {
+    expect(flagsOf(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, mixed(), true))).toEqual({
+      'light.den_lamp': true,
+      'switch.den_plug': false,
+      'cover.den_blind': false,
+      'vacuum.den_vac': false,
+    });
+  });
+
+  it('count everything: all candidates on', () => {
+    expect(Object.values(flagsOf(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, mixed(), false)))).toEqual([true, true, true, true]);
+  });
+
+  it('handles rooms that only hold lights or only hold switches', () => {
+    const lights = mixed().filter((device) => device.domain === 'light');
+    const switches = mixed().filter((device) => device.domain === 'switch');
+    expect(Object.values(flagsOf(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, lights, true)))).toEqual([true]);
+    expect(Object.values(flagsOf(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, switches, true)))).toEqual([false]);
+    expect(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, [], true)).toEqual(EMPTY_DEVICE_CONFIG);
+  });
+
+  it('overwrites earlier choices but keeps the other override fields, without mutating the input', () => {
+    const before = setDeviceCountsAsLight(
+      { ...EMPTY_DEVICE_CONFIG, devices: { 'switch.den_plug': { name: 'Stecker', visible: true } } },
+      'switch.den_plug', true,
+    );
+    const after = setRoomCountsAsLight(before, mixed(), true);
+    expect(after.devices['switch.den_plug']).toEqual({ name: 'Stecker', visible: true, countsAsLight: false });
+    expect(before.devices['switch.den_plug']?.countsAsLight).toBe(true);
+  });
+
+  it('ignores groups and non-candidate categories', () => {
+    const devices = [
+      { entityId: 'group.hauser_1', domain: 'light', category: 'light' as const },
+      { entityId: 'sensor.den_temp', domain: 'sensor', category: 'info' as const },
+      { entityId: 'fan.den_fan', domain: 'fan', category: 'fan' as const },
+      { entityId: 'light.den_lamp', domain: 'light', category: 'light' as const },
+    ];
+    expect(flagsOf(setRoomCountsAsLight(EMPTY_DEVICE_CONFIG, devices, true))).toEqual({ 'light.den_lamp': true });
+  });
+});
+
+describe('room bulk choice in the device manager', () => {
+  afterEach(() => {
+    deviceManager.config = EMPTY_DEVICE_CONFIG;
+  });
+
+  it('applies the whole room with a single save', () => {
+    const seed = projectedRoom({});
+    appState.rooms = runtimeRooms(seed);
+    const save = vi.mocked(deviceConfigModule.saveDeviceConfig);
+    save.mockClear();
+    updateConfig(setRoomCountsAsLight(deviceManager.config, appState.rooms.find((room) => room.id === 'den')!.lights, true));
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(Object.fromEntries(Object.entries(deviceManager.config.devices).map(([id, value]) => [id, value.countsAsLight]))).toEqual({
+      'light.den_lamp': true,
+      'switch.den_plug': false,
+      'cover.den_blind': false,
+      'vacuum.den_vac': false,
+    });
   });
 });

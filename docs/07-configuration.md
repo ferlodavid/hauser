@@ -113,7 +113,10 @@ phone summary, widget snapshot). A missing field keeps the previous counting
 on the phone), so existing files need no migration and `schemaVersion` stays 4.
 The setup wizard writes `true` for role `light` and `false` for `switch`,
 `cover` and `vacuum`. The per-device choice in the device settings is stored in
-the shared device configuration and takes precedence over this value.
+the shared device configuration and takes precedence over this value. The room
+editor's **Count only lights** and **Count everything** buttons write this
+override for every light, switch, cover and vacuum of one room in a single save
+(local `group.*` devices are skipped).
 
 The complete TypeScript contract and validator live in
 [`../app/src/lib/config/household-config.ts`](../app/src/lib/config/household-config.ts).

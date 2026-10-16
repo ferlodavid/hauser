@@ -110,7 +110,8 @@ export function dissolveDeviceGroup(id: string): void {
   updateConfig(dissolveGroup(deviceManager.config, id));
 }
 
-function updateConfig(config: DeviceConfig): void {
+/* Eine Änderung der Gerätekonfiguration: speichern, Räume neu ableiten. */
+export function updateConfig(config: DeviceConfig): void {
   deviceManager.config = config;
   saveDeviceConfig(config);
   applyProjection();

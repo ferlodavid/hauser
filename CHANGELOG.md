@@ -12,6 +12,10 @@ Semantic Versioning for its public release line.
   only lights by default; existing setups keep counting what they counted
   before until you change a device. The choice applies to the room overview,
   the phone summary and the widget snapshot.
+- Rooms: the room editor has **Count only lights** and **Count everything**
+  buttons that set the lightbulb choice for all devices of a room at once, in
+  one save. Groups are not affected, and the buttons can be undone by each
+  other.
 
 ## [0.45.0] - 2026-10-15
 

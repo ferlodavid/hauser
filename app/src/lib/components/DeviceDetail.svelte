@@ -21,7 +21,8 @@
     mowerCommand, alarmCommand, setNumberValue, selectOption, pressButton, type AlarmAction,
   } from '../state/commands.ts';
   import { deviceDetail, closeDeviceDetail, finishDeviceDetailClose, openDeviceDetail } from '../state/overlay.svelte.ts';
-  import { countsForBulb, isGroupableCategory, isGroupEntityId } from '../state/device-config.ts';
+  import { countsForBulb, isGroupableCategory } from '../state/device-config.ts';
+  import { isBulbCandidate } from '../state/bulb-choice.ts';
   import { pulse } from '../actions/pulse.ts';
   import { LIGHT_COLOR_SWATCHES, tempTint, climateTint, lightLevel } from '../state/light-presets.ts';
   import { fanPresetIcon, fanPresetLabel, fanSpinDuration } from '../state/fan-presets.ts';
@@ -49,7 +50,7 @@
   /* Glühbirne der Raumübersicht: nur Geräte, die dort überhaupt mitgezählt
      werden könnten (Lichter, Schalter, Rollos, Saugroboter), und keine Gruppen. */
   const counts = $derived(device ? countsForBulb(device) : true);
-  const bulbChoice = $derived(['light', 'switch', 'cover', 'vacuum'].includes(category) && !isGroupEntityId(entityId));
+  const bulbChoice = $derived(!!device && isBulbCandidate(device));
 
   // Gemergte Sicht (Server bzw. pending Intent); undefined tolerieren —
   // frisch eingeblendete Geräte haben ggf. noch keinen Wert (commands.ts).

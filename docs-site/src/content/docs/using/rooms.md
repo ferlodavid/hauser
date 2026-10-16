@@ -40,6 +40,8 @@ The bulb on a room tile, the light count on the phone card and the lights count 
 - **Existing setups:** nothing changes by itself. Until you set a device explicitly, a room counts what it counted before.
 - **Change it per device:** open the device's settings and switch **Counts for the room light indicator** on or off. A smart plug that powers a lamp can count; an open blind does not have to. The choice is stored with the shared device settings, so every panel and phone sees it.
 
+- **Change a whole room at once:** in the room editor (**Settings → Home → Rooms & devices**, then open the room), the **Room light indicator** row has two buttons. **Count only lights** marks every light as counting and every switch, cover and vacuum as not counting. **Count everything** marks all of them as counting. Both overwrite earlier per-device choices of that room, save once, and can be followed by single-device changes.
+
 The setting does not hide or disable the device. It only decides whether the device counts for the bulb.
 
 ## Room pictures follow the room
